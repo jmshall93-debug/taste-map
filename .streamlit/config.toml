@@ -1,9 +1,15 @@
 [theme]
 base = "dark"
 primaryColor = "#ea580c"
-backgroundColor = "#050504"
-secondaryBackgroundColor = "#100f0d"
+backgroundColor = "#0e0c0a"
+secondaryBackgroundColor = "#161310"
 textColor = "#fff8f0"
 
 [server]
 headless = true
+port = 8501
+address = "localhost"
+
+[browser]
+serverAddress = "localhost"
+gatherUsageStats = false

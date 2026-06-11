@@ -1,107 +1,78 @@
 # Taste Map
 
-Taste Map turns a Spotify / Exportify-style CSV into an editorial portrait of a music collection: genre weight, release-era shape, artist concentration, and a "deep cuts" index based on Spotify popularity.
+Upload a Spotify playlist export and get a one-page portrait of what you listen to — genre weight, release-era shape, artist concentration, and how deep your cuts run.
 
-It is built as a small portfolio demo: fast to run, easy to inspect, and designed for clean handover.
+Small portfolio build: runs locally or on Streamlit Cloud, sample data included, no private tracks in the repo.
 
-## What It Does
+## What's in the report
 
-- Reads a Spotify liked-songs or playlist CSV export.
-- Builds a one-page visual report with genre, era, artist, and popularity signals.
-- Includes a bundled sample CSV so the app works without private data.
-- Lets a user upload their own CSV from the sidebar.
+- Genre treemap, decade bars, top artists
+- Mood fingerprint (energy, danceability, valence, tempo) when the export includes audio features
+- Headline and short interpretation from your stats — works offline, no API required
+- Optional AI rewrite via Groq or local Ollama
 
-## Data Flow
+## How it works
 
 ```text
-CSV export -> parse.py -> derived taste profile -> app.py -> Streamlit report
+CSV → parse.py → taste profile + brief → app.py (Streamlit + Plotly)
 ```
 
-`parse.py` is the engine: it normalizes columns, splits genres/artists, buckets release years by decade, and calculates the deep-cuts score.
+`parse.py` normalises Exportify columns, splits genres and artists, buckets years, and scores popularity. `narrate.py` turns the brief into copy. `app.py` renders the page.
 
-`app.py` is the presentation layer: it renders the report with Streamlit and Plotly.
+## Run locally
 
-## Run Locally
+Double-click `run.bat`, or from PowerShell:
 
 ```powershell
 cd "C:\AI dreams\business\taste-map"
-.\.venv\Scripts\python.exe -m streamlit run app.py
+.\run.bat
 ```
 
-If setting up from scratch:
+Opens at **http://localhost:8501**.
+
+First-time setup:
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-## Data Files
+## Your data
 
-- `data/sample_liked_songs.csv` is safe demo data for a public repo.
-- `data/Liked_Songs.csv` is a private local export and is ignored by git.
+| File | Purpose |
+|---|---|
+| `data/sample_liked_songs.csv` | Bundled demo — safe to commit |
+| `data/Liked_Songs.csv` | Your private export — gitignored |
+| `data/playlists/*.csv` | Local multi-playlist folder — gitignored |
 
-The app uses this priority:
+Load order: **upload on the main page** → playlist picker → sample CSV.
 
-1. Uploaded CSV from the sidebar.
-2. Local private `data/Liked_Songs.csv`, if present.
-3. Bundled sample `data/sample_liked_songs.csv`.
+Useful Exportify columns: `Track Name`, `Artist Name(s)`, `Release Date`, `Popularity`, `Genres`. Audio feature columns improve the mood strip.
 
-## Expected CSV Columns
+## Optional AI portrait
 
-The parser expects Exportify-style columns such as:
+Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and set one of:
 
-- `Track Name`
-- `Artist Name(s)`
-- `Release Date`
-- `Popularity`
-- `Genres`
+- `GROQ_API_KEY` — free tier at [console.groq.com](https://console.groq.com)
+- `OLLAMA_MODEL` — e.g. `llama3.2` with [Ollama](https://ollama.com) running locally
 
-It tolerates a few common naming variants, but the richer the export, the better the portrait.
+Only the stat brief goes to the model, not raw track lists. No key → template copy.
 
-## Deploy
+## Deploy on Streamlit Community Cloud
 
-Git is installed on this laptop. From the project folder:
+Repo: [github.com/jmshall93-debug/taste-map](https://github.com/jmshall93-debug/taste-map)
 
-```powershell
-cd "C:\AI dreams\business\taste-map"
-git init
-git add app.py parse.py requirements.txt README.md .gitignore .streamlit/config.toml data/sample_liked_songs.csv BUILD_LOG.md
-git commit -m "Initial Taste Map portfolio demo"
-```
+1. Push the latest `main` branch to GitHub.
+2. Open [share.streamlit.io](https://share.streamlit.io) → **Create app**.
+3. Select the repo, branch **`main`**, main file path **`app.py`**.
+4. Deploy. The live app loads the bundled sample CSV; visitors can upload their own export from the main page.
 
-Create a new public GitHub repo (e.g. `taste-map`), then:
+For AI portrait on Cloud: app **Settings → Secrets** — same keys as `secrets.toml`.
 
-```powershell
-git remote add origin https://github.com/jmshall93-debug/taste-map.git
-git branch -M main
-git push -u origin main
-```
+## Portfolio blurb
 
-Do **not** commit `.venv/`, `__pycache__/`, or `data/Liked_Songs.csv` — they are in `.gitignore`.
+**Listening Taste Map** — visual taste portrait from a Spotify/Exportify CSV. Genre map, era shape, artist concentration, deep-cuts index. Python, Streamlit, Plotly. Sample data and source included.
 
-On first use, Git may ask for your name and email (`git config --global user.name` / `user.email`).
+## Handover
 
-Then in Streamlit Community Cloud, create a new app from that repo and set:
-
-- Main file path: `app.py`
-
-The deployed app will use the bundled sample data by default, and visitors can upload their own Exportify CSV from the sidebar.
-
-## Handover Notes
-
-A client version would include:
-
-- Full source code.
-- Sample/demo data.
-- Setup instructions.
-- Clear notes on private files vs public demo files.
-- Optional customization: branding, copy tone, extra charts, or multi-playlist comparison.
-
-The goal is no lock-in: the owner can run, inspect, and modify the app without depending on the original builder.
-
-## Portfolio Copy
-
-**Listening Taste Map — visual portrait from a Spotify export**
-
-Independent demonstration build. Upload a Spotify/Exportify CSV and get a one-page taste portrait: genre composition, release-era shape, top artists, and a deep-cuts index. Built with a clean separation between parsing logic and presentation, plus sample data and run instructions for handover.
+You get full source, demo data, and run instructions. Private exports stay local. The parsing layer is separate from the UI, so charts, copy, or branding can change without touching the core logic.
